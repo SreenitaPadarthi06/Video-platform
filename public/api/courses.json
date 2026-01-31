@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "title": "Introduction to React",
+    "description": "Learn the fundamentals of React to build modern web applications.",
+    "instructor": "Jane Doe",
+    "thumbnail": "/images/react-thumb.png"
+  },
+  {
+    "id": 2,
+    "title": "Advanced CSS Techniques",
+    "description": "Master Flexbox, Grid, and animations.",
+    "instructor": "John Smith",
+    "thumbnail": "/images/css-thumb.png"
+  }
+]

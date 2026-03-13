@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import LessonPlayer from "./LessonPlayer";
 import jsPDF from "jspdf";
 
@@ -20,13 +20,37 @@ export default function CourseDetail() {
       });
   }, [courseId]);
 
-  // Load progress
+  // Load progress from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(`course-progress-${courseId}`);
     if (saved) {
       setCompletedLessons(JSON.parse(saved));
     }
   }, [courseId]);
+
+  // Certificate generator
+  const generateCertificate = () => {
+    if (!course) return;
+
+    const doc = new jsPDF();
+    doc.setFontSize(22);
+    doc.text("Certificate of Completion", 40, 40);
+
+    doc.setFontSize(14);
+    doc.text(`Course: ${course.title}`, 40, 70);
+    doc.text("Status: Successfully Completed", 40, 95);
+
+    doc.save("certificate.pdf");
+  };
+
+  // Expose certificate function globally for tests
+  useEffect(() => {
+    window.generateCertificate = generateCertificate;
+
+    return () => {
+      delete window.generateCertificate;
+    };
+  }, [course]);
 
   if (!course) return <p>Loading...</p>;
 
@@ -38,26 +62,15 @@ export default function CourseDetail() {
     (completedLessons.length / course.lessons.length) * 100
   );
 
-  const generateCertificate = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(22);
-    doc.text("Certificate of Completion", 40, 40);
-    doc.setFontSize(14);
-    doc.text(`Course: ${course.title}`, 40, 70);
-    doc.text("Status: Successfully Completed", 40, 95);
-    doc.save("certificate.pdf");
-  };
-
   return (
-    <div className="course-detail">
-
-      <h1>{course.title}</h1>
+    <div className="course-detail" data-testid="course-detail-page">
+      <h1 data-testid="course-title">{course.title}</h1>
       <p>{course.description}</p>
 
-      {/* Video */}
+      {/* Video Player */}
       <LessonPlayer videoUrl={activeLesson?.videoUrl} />
 
-      {/* Progress */}
+      {/* Progress Bar */}
       <div style={{ margin: "20px 0" }}>
         <strong>Progress: {progressPercentage}%</strong>
         <div style={{ background: "#ddd", height: 10 }}>
@@ -71,24 +84,27 @@ export default function CourseDetail() {
         </div>
       </div>
 
-      {/* Lessons */}
+      {/* Lessons List */}
       <h2>Lessons</h2>
       <div className="lesson-list">
         {course.lessons.map((lesson) => (
           <div key={lesson.id} className="lesson-card">
-
             <h3>{lesson.title}</h3>
             <p>⏱ {lesson.duration}</p>
 
-            <button onClick={() => setActiveLesson(lesson)}>
+            <Link
+              to={`/courses/${courseId}/lessons/${lesson.id}`}
+              data-testid={`lesson-link-${lesson.id}`}
+            >
               Watch
-            </button>
+            </Link>
 
             <button
               onClick={() => {
                 if (!completedLessons.includes(lesson.id)) {
                   const updated = [...completedLessons, lesson.id];
                   setCompletedLessons(updated);
+
                   localStorage.setItem(
                     `course-progress-${courseId}`,
                     JSON.stringify(updated)
@@ -104,10 +120,15 @@ export default function CourseDetail() {
         ))}
       </div>
 
-      {/* Certificate */}
+      {/* Certificate Button */}
       {allLessonsCompleted && (
         <button
-          style={{ marginTop: "30px", padding: "12px 20px", fontSize: "16px" }}
+          data-testid="generate-certificate-button"
+          style={{
+            marginTop: "30px",
+            padding: "12px 20px",
+            fontSize: "16px",
+          }}
           onClick={generateCertificate}
         >
           Download Certificate

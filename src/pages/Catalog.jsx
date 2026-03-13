@@ -17,24 +17,26 @@ export default function Catalog() {
   );
 
   return (
-    <div className="catalog-page">
+    <div className="catalog-page" data-testid="catalog-page">
       <h1 className="catalog-title">Course Catalog</h1>
 
       <input
-        type="text"
-        placeholder="Search courses..."
-        className="catalog-search"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-      />
+  type="text"
+  placeholder="Search courses..."
+  className="catalog-search"
+  data-testid="search-input"
+  value={search}
+  onChange={(e) => setSearch(e.target.value)}
+/>
 
       <div className="catalog-grid">
         {filteredCourses.map((course) => (
           <Link
-            key={course.id}
-            to={`/courses/${course.id}`}
-            className="course-card"
-          >
+        key={course.id}
+        to={`/courses/${course.id}`}
+        className="course-card"
+        data-testid={`course-card-${course.id}`}
+      >
             <img
               src={course.thumbnail}
               alt={course.title}
